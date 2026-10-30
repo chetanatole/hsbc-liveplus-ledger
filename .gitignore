@@ -1,0 +1,48 @@
+# Generated files and SDK/tooling
+/build/
+/.gradle/
+/.idea/
+*.iml
+/local.properties
+/build.local.ps1
+/.sdk/
+/.tools/
+
+# Signing keys, passwords and secrets
+/.signing/
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.pem
+*.key
+*key-password*
+/.env
+/.env.*
+
+# Compiled packages belong in reviewed release attachments
+*.apk
+*.apksig
+*.idsig
+*.aab
+*.class
+*.dex
+*.jar
+
+# Personal data and unreviewed media
+liveplus-backup*.json
+/backups/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.log
+/docs/screenshots/private/
+
+# OS/editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*.tmp

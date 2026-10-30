@@ -1,0 +1,86 @@
+name: Build and publish APK release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Validate tag, version and signing configuration
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_REF_NAME -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$') { throw 'Use a version tag such as v1.0.0 or v1.0.0-beta.1.' }
+          if (!$env:KEYSTORE_BASE64 -or !$env:KEYSTORE_PASSWORD) { throw 'Set ANDROID_KEYSTORE_BASE64 and ANDROID_KEYSTORE_PASSWORD repository secrets first. The release must use the retained signing key.' }
+          [xml]$manifest = Get-Content -LiteralPath 'app/src/main/AndroidManifest.xml' -Raw
+          $version = $manifest.manifest.GetAttribute('versionName','http://schemas.android.com/apk/res/android')
+          $parts = @($version.Split('.'))
+          while ($parts.Count -lt 3) { $parts += '0' }
+          $baseTag = ($env:GITHUB_REF_NAME.Substring(1) -split '-',2)[0]
+          if (($parts -join '.') -ne $baseTag) { throw "Tag base $baseTag does not match manifest version $version." }
+      - name: Ensure Android platform and build tools
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sdk = if ($env:ANDROID_SDK_ROOT) { $env:ANDROID_SDK_ROOT } else { $env:ANDROID_HOME }
+          if (!$sdk) { throw 'Android SDK not found on the Windows runner.' }
+          $manager = Get-ChildItem -LiteralPath "$sdk/cmdline-tools" -Filter 'sdkmanager.bat' -Recurse | Select-Object -First 1
+          if (!$manager) { throw 'sdkmanager.bat is missing.' }
+          & $manager.FullName 'platforms;android-35' 'build-tools;35.0.0'
+          if ($LASTEXITCODE -ne 0) { throw 'Android SDK package installation failed.' }
+          "ANDROID_SDK_ROOT=$sdk" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Restore private signing material
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path '.signing' | Out-Null
+          [IO.File]::WriteAllBytes((Join-Path $PWD '.signing/personal-release.p12'),[Convert]::FromBase64String($env:KEYSTORE_BASE64))
+          [IO.File]::WriteAllText((Join-Path $PWD '.signing/key-password.txt'),$env:KEYSTORE_PASSWORD,[Text.UTF8Encoding]::new($false))
+      - name: Build, test and verify APK
+        run: ./build.ps1
+      - name: Verify release signing identity and make checksum
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $expected = (Get-Content -LiteralPath 'docs/RELEASE_SIGNING_CERTIFICATE.txt' -Raw).Trim().ToLowerInvariant()
+          $certs = & "$env:JAVA_HOME/bin/java.exe" -jar "$env:ANDROID_SDK_ROOT/build-tools/35.0.0/lib/apksigner.jar" verify --print-certs 'build/LivePlus-Ledger.apk'
+          if ($LASTEXITCODE -ne 0) { throw 'APK signature verification failed.' }
+          $match = [regex]::Match(($certs -join [Environment]::NewLine),'Signer #1 certificate SHA-256 digest:\s*([a-fA-F0-9]{64})')
+          if (!$match.Success -or $match.Groups[1].Value.ToLowerInvariant() -ne $expected) { throw 'Release signing certificate does not match the retained app signing identity.' }
+          $hash = (Get-FileHash -LiteralPath 'build/LivePlus-Ledger.apk' -Algorithm SHA256).Hash.ToLowerInvariant()
+          [IO.File]::WriteAllText((Join-Path $PWD 'build/SHA256SUMS.txt'),"$hash  LivePlus-Ledger.apk"+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+      - name: Publish APK and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $releaseArgs = @('release','create',$env:GITHUB_REF_NAME,'build/LivePlus-Ledger.apk','build/SHA256SUMS.txt','--repo',$env:GITHUB_REPOSITORY,'--verify-tag','--title',"Live+ Ledger $env:GITHUB_REF_NAME",'--notes-file','.github/RELEASE_NOTES.md','--generate-notes')
+          if ($env:GITHUB_REF_NAME.Contains('-')) { $releaseArgs += '--prerelease' }
+          & gh @releaseArgs
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub release creation failed. Check whether this tag already has a release before retrying.' }
+      - name: Remove private runner signing files
+        if: always()
+        run: |
+          Remove-Item -LiteralPath '.signing/personal-release.p12','.signing/key-password.txt' -Force -ErrorAction SilentlyContinue
