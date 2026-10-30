@@ -1,4 +1,4 @@
-# First-run device check
+# Device testing checklist
 
 1. Install on Android 8+ and open Settings. Confirm the screen scrolls with the keyboard open, text remains readable, and controls are reachable.
 2. Save card suffix, period, cap and notification source apps. Enable capture and grant notification access. Return to Overview and check **Capture enabled**.
@@ -9,5 +9,3 @@
 7. For a refund, link it to the correct purchase. Check that the original period's eligible spend reduces and compare the actual bank clawback separately.
 8. Export a backup and confirm a JSON file is created. Test restore on a spare device or only after securing the backup; restore requires an empty ledger and keeps capture off.
 9. Revoke notification access and confirm Overview reports capture off. Re-enable it if you want capture to continue. Open the app after restarting the phone to confirm its status.
-
-No live-phone result is claimed by the desktop build checks.

@@ -14,7 +14,7 @@ Stored fields include amount, merchant, date, category, review/duplicate state, 
 
 Raw notification bodies are not saved. The app does not read the SMS inbox or automatically import historical messages.
 
-Transactions/rules use an app-private SQLite database; preferences use app-private storage. Android app backup is disabled. These are storage controls, not a claim of separate app-managed encryption.
+Transactions/rules use an app-private SQLite database; preferences use app-private storage. Android app backup is disabled. The app does not implement an additional encryption layer.
 
 **Erase local data** clears records, merchant rules and settings. Uninstalling removes local storage. Revoking notification access stops capture without erasing existing records.
 
@@ -28,4 +28,4 @@ JSON exports use Android's document picker. Selecting a cloud provider can uploa
 
 Do not publish real backups, raw bank messages, databases, card digits, balances, OTPs, references or account identifiers. Tests should use synthetic examples. Redact financial/personal details before adding screenshots.
 
-Signing keys/passwords are local files under the Git-ignored `.signing/` directory. APK signatures and successful installation do not establish Google Play Protect approval.
+Signing keys/passwords are local files under the Git-ignored `.signing/` directory.

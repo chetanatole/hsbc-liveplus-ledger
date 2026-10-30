@@ -1,66 +1,82 @@
-# APK releases on GitHub
+# Generate an APK release
 
-The repository includes a tag-triggered release workflow at `.github/workflows/release.yml`. No APK release has been published yet; the tag-triggered workflow has not been run.
+The [release workflow](../.github/workflows/release.yml) builds and publishes a signed APK when a version tag is pushed.
 
-A successful version-tag run builds/tests the APK, verifies the signature and alignment, checks its signing-certificate fingerprint, generates a checksum and publishes these release assets:
+Release assets:
 
-- `LivePlus-Ledger.apk` — the Android installer.
-- `SHA256SUMS.txt` — SHA-256 checksum.
+- `LivePlus-Ledger.apk` — Android installer.
+- `SHA256SUMS.txt` — APK checksum.
 
-GitHub also supplies source archives automatically; those are not installers. Public-repository release assets are downloadable by visitors. Private-repository downloads require access.
+GitHub's automatically generated source archives are not installers.
 
-## One-time repository setup
+## 1. Configure signing secrets
 
-Push the project to your GitHub repository first. In **Settings → Secrets and variables → Actions**, configure:
+Use the same signing key for every update. A local [build](DEVELOPMENT.md#build) creates the signing files if they do not already exist.
 
-| Secret | Contents |
+In **GitHub → Settings → Secrets and variables → Actions**, add:
+
+| Secret | Value |
 | --- | --- |
-| `ANDROID_KEYSTORE_BASE64` | Base64-encoded bytes of the existing `.signing/personal-release.p12` |
-| `ANDROID_KEYSTORE_PASSWORD` | Contents of the existing `.signing/key-password.txt` |
+| `ANDROID_KEYSTORE_BASE64` | Base64-encoded contents of `.signing/personal-release.p12` |
+| `ANDROID_KEYSTORE_PASSWORD` | Contents of `.signing/key-password.txt` |
 
-Use the original key if releases should update the owner's existing installed app. Do not commit these values, paste them into issues/chat, or put them in workflow YAML. The workflow deliberately fails if they are missing.
-
-You can configure secrets with an authenticated GitHub CLI from a trusted local PowerShell session without printing their values:
+Alternatively, from the repository root with an authenticated GitHub CLI:
 
 ```powershell
 $repo = 'chetanatole/hsbc-liveplus-ledger'
 [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $PWD '.signing/personal-release.p12'))) | gh secret set ANDROID_KEYSTORE_BASE64 --repo $repo
 Get-Content -LiteralPath '.signing/key-password.txt' -Raw | gh secret set ANDROID_KEYSTORE_PASSWORD --repo $repo
+gh secret list --repo $repo
 ```
 
-Check each command succeeds. Base64 is an encoding, not encryption; keep any temporary copy private. GitHub stores the submitted values as Actions secrets. The workflow restores temporary key/password files on its runner and removes them even after failure.
+Keep the key and password out of source control. The workflow restores them on the build runner and removes the temporary signing files after the job.
 
-Only trusted maintainers should be able to publish release tags or change release workflow code. Do not supply signing secrets to untrusted workflows. Protect your private backup of the signing key. A fork using its own signing identity must update the public fingerprint file deliberately.
+The public certificate fingerprint in `docs/RELEASE_SIGNING_CERTIFICATE.txt` must match the signing key. If setting up a different signing identity, update that fingerprint before publishing.
 
-`docs/RELEASE_SIGNING_CERTIFICATE.txt` records the expected public certificate fingerprint, not a secret. It prevents publishing an APK signed with an accidentally substituted key.
+## 2. Set the version
 
-## Publish a release
+In `app/src/main/AndroidManifest.xml`:
 
-1. Check the release commit and phone-test status. Update `versionName` and increment `versionCode` in the Android manifest for subsequent installed-app updates. Update the changelog/release notes.
-2. Commit and push the changes.
-3. Create and push a version tag:
+- Set `android:versionName` to the release version.
+- Increase `android:versionCode` for each subsequent APK update.
+- Update `CHANGELOG.md` and `.github/RELEASE_NOTES.md`.
+
+The tag must match the manifest's base version. Manifest version `1.0` is accepted as `1.0.0`.
+
+## 3. Push a release tag
+
+Commit and push the release changes, then create the tag:
 
 ```powershell
-git tag -a v1.0.0-beta.1 -m "Live+ Ledger 1.0.0 beta 1"
-git push origin v1.0.0-beta.1
+git tag -a v1.0.0 -m "Live+ Ledger 1.0.0"
+git push origin v1.0.0
 ```
 
-The initial manifest version `1.0` is accepted as base version `1.0.0`. Tag bases must match the manifest version; the workflow checks that. Tags with a suffix such as `-beta.1` publish a **prerelease**. Plain tags such as `v1.0.0` publish a normal release. The first release is best treated as a preview while live notification capture remains unconfirmed.
+For a preview release, use a suffix such as `v1.0.0-beta.1`. Tags with a suffix publish a GitHub prerelease; plain version tags publish a normal release.
 
-Open the repository's **Actions** tab to inspect the run, then **Releases** to inspect the uploaded APK/checksum. SDK installation requires network access on GitHub's hosted Windows runner. A missing secret, failed test/build/signature check, or fingerprint mismatch stops publication. This workflow uses the built-in repository token, not a separate personal access token.
+## 4. Check the workflow
 
-Do not reuse tags or overwrite already published assets casually. Rerunning a published tag fails at release creation instead of silently replacing the APK.
+Open [GitHub Actions](https://github.com/chetanatole/hsbc-liveplus-ledger/actions). The release job:
 
-## Direct download link
+1. Checks the tag, manifest version and signing configuration.
+2. Installs the required Android SDK packages.
+3. Runs tests and builds the APK.
+4. Verifies signing identity and ZIP alignment.
+5. Generates the checksum.
+6. Publishes the APK and checksum under [Releases](https://github.com/chetanatole/hsbc-liveplus-ledger/releases).
 
-After a normal release is published, a stable download link has this form:
+A failed test, missing secret, signature mismatch or build error stops publication. Existing release assets are not silently replaced; use a new version/tag for a new release.
+
+## Download links
+
+After a normal release is published, the latest APK is available at:
 
 ```text
 https://github.com/chetanatole/hsbc-liveplus-ledger/releases/latest/download/LivePlus-Ledger.apk
 ```
 
-This direct link becomes usable after the first normal release is published. GitHub's latest-release route does not select a prerelease; link an initial preview through its specific release page/tag instead.
+The latest-release link does not select prereleases. Use a prerelease's own release page instead.
 
-Publishing on GitHub does not remove Android's sideload/Play Protect checks.
+APK installation and notification access are described in [INSTALLATION.md](INSTALLATION.md).
 
-References: [GitHub release CLI](https://cli.github.com/manual/gh_release_create), [Actions secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets).
+References: [GitHub releases](https://cli.github.com/manual/gh_release_create), [Actions secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets).

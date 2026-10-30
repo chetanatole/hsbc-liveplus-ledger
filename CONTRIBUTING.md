@@ -8,6 +8,6 @@ Never include real OTPs, card digits, balances, references, credentials, exports
 
 Follow [screenshot instructions](docs/screenshots/README.md). Only real reviewed images should be embedded in the README.
 
-Before committing, review `git status` and `git diff --cached`. Keep signing material, APKs, local build wrappers and personal records excluded. CI runs parser/calculation tests, not phone capture or Play Protect approval.
+Before committing, review `git status` and `git diff --cached`. Keep signing material, APKs, local build wrappers and personal records excluded. CI runs parser and calculation tests. Use the device checklist for Android behavior.
 
 Licensed under the [MIT License](LICENSE).
