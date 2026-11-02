@@ -6,7 +6,6 @@ import android.os.*;
 import android.service.notification.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.time.LocalDate;
 import java.util.*;
 
 public class AlertListener extends NotificationListenerService {
@@ -35,9 +34,7 @@ public class AlertListener extends NotificationListenerService {
    SharedPreferences p=Store.prefs(this);Engine.Parsed parsed=Engine.parse(context,body,p.getString("last4",""),time);if(parsed==null)return;
    Engine.Tx x=new Engine.Tx();x.amount=parsed.amount;x.merchant=parsed.merchant;x.date=parsed.date;x.refund=parsed.refund;x.received=time;x.source="Alert";
    x.event=hash(sbn.getPackageName()+"|"+sbn.getKey()+"|"+time+"|"+body);
-   int learned=s.rule(x.merchant);
-   x.category=learned>=0?learned:Engine.suggest(x.merchant,LocalDate.parse(x.date),p.getBoolean("myntra",false));
-   x.confirmed=learned>=0;
+   s.categorize(x,p.getBoolean("myntra",false));
    for(Engine.Tx existing:s.all()){
     if(existing.event.equals(x.event))return;
     if(!existing.refund&&!x.refund&&existing.active&&existing.amount==x.amount&&Math.abs(existing.received-x.received)<=120000&&Engine.key(existing.merchant).equals(Engine.key(x.merchant))){x.duplicate=true;x.confirmed=false;break;}

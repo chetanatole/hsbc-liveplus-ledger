@@ -15,7 +15,7 @@ Independent project; not affiliated with HSBC. Merchant classifications, posting
 - Track accelerated spending, estimated cashback and remaining room under the cashback cap.
 - View spending history by calendar month or statement period.
 - Automatically capture matching HSBC transaction notifications from selected apps.
-- Suggest spending categories, make corrections and remember merchant categories.
+- Suggest spending categories and manage your own merchant-to-category mappings.
 - Review uncertain transactions and possible duplicates, and link full or partial refunds.
 - Add purchases manually or import pasted transaction alerts.
 - Export and restore JSON backups.

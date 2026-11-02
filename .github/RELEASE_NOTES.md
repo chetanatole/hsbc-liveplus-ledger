@@ -1,15 +1,12 @@
 Download **LivePlus-Ledger.apk** below. Requires Android 8.0 or newer. **SHA256SUMS.txt** contains the APK checksum.
 
-## What's new in 1.0.1
+## What's new in 1.0.2
 
-- Light and Dark themes in Settings → Appearance, with Light as the default.
-- Clearer tabs and a highlighted Needs review count for the selected period.
-- Add purchase and Paste alert controls that stay accessible while scrolling Activity.
-- Scroll-position restoration when returning to the app.
-- Calendar date selection and cashback-rate labels in the category dropdown.
-- A remembered-category checkbox that reflects saved merchant rules and lets you forget them.
-- Simpler screen labels, refreshed screenshots and reward terms checked on 3 November 2026. The expired Myntra offer is available for historical purchases only.
+- Expanded category suggestions with 119 merchant names and keywords, including business-name aliases, shopping and utilities.
+- A **Settings → Merchant categories → Manage merchant categories** screen for your remembered and manually added mappings. Add a mapping or tap one to edit, rename or delete it.
+- Saved mappings now apply consistently to captured alerts and pasted purchases. Existing transactions keep their categories.
+- Fixed grocery-service matching such as Swiggy Instamart and improved name boundaries and punctuation matching. Generic payment-platform names remain available for manual review.
 
-Install this APK over the existing Live+ Ledger app to keep your transactions and settings. The signing identity is unchanged. Export a backup before uninstalling or changing phones.
+Install this APK over your existing Live+ Ledger app to keep transactions, settings and saved mappings. The signing identity is unchanged. Merchant mappings are stored locally and are currently not included in JSON backups.
 
-See [installation and setup](https://github.com/chetanatole/hsbc-liveplus-ledger/blob/v1.0.1/docs/INSTALLATION.md), including Play Protect prompts, and [reward assumptions](https://github.com/chetanatole/hsbc-liveplus-ledger/blob/v1.0.1/docs/REWARDS.md). Reconcile cashback estimates with your card statement.
+See [installation and setup](https://github.com/chetanatole/hsbc-liveplus-ledger/blob/v1.0.2/docs/INSTALLATION.md), [merchant mappings](https://github.com/chetanatole/hsbc-liveplus-ledger/blob/v1.0.2/docs/MERCHANTS.md) and [reward assumptions](https://github.com/chetanatole/hsbc-liveplus-ledger/blob/v1.0.2/docs/REWARDS.md). Category suggestions are estimates; reconcile cashback with your card statement.

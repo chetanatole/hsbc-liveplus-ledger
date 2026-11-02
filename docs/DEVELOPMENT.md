@@ -13,7 +13,7 @@ The build tools must include `aapt2`, `zipalign`, `d8.jar`, `apksigner.jar` and 
 ```text
 app/src/main/AndroidManifest.xml  Android requirements and components
 app/src/main/java/in/local/liveplus/
-  Engine.java                    Parsing, rewards and period calculations
+  Engine.java                    Parsing, merchant catalog, rewards and periods
   Store.java                     Local database and merchant rules
   AlertListener.java             Notification capture
   MainActivity.java              Native Android interface
@@ -51,7 +51,7 @@ The script runs tests, compiles resources and Java, converts classes with D8, al
 
 Tests require a JDK but not the Android SDK. The script also works under PowerShell 7 on Linux/macOS and uses `JAVA_HOME` or Java on `PATH` when `-JavaHome` is omitted.
 
-Coverage includes parsing, card filtering, OTP/decline/payment rejection, category suggestions, promotion expiry, caps, period boundaries, duplicates, refunds and review counts. Use the [device checklist](../DEVICE-CHECK.md) for Android-specific behavior.
+Coverage includes parsing, card filtering, OTP/decline/payment rejection, merchant aliases, matching precedence, saved-category overrides, promotion expiry, caps, period boundaries, duplicates, refunds and review counts. Use the [device checklist](../DEVICE-CHECK.md) for Android-specific behavior.
 
 ## Signing
 

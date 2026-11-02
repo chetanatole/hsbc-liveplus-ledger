@@ -27,6 +27,24 @@ public final class Store extends SQLiteOpenHelper {
  public void rule(String merchant,int category){ContentValues v=new ContentValues();v.put("merchant",Engine.key(merchant));v.put("category",category);getWritableDatabase().insertWithOnConflict("rules",null,v,SQLiteDatabase.CONFLICT_REPLACE);}
  public void forgetRule(String merchant){getWritableDatabase().delete("rules","merchant=?",new String[]{Engine.key(merchant)});}
  public int rule(String merchant){try(Cursor c=getReadableDatabase().rawQuery("SELECT category FROM rules WHERE merchant=?",new String[]{Engine.key(merchant)})){return c.moveToFirst()?c.getInt(0):-1;}}
+ public Map<String,Integer> rules(){
+  Map<String,Integer> out=new LinkedHashMap<>();
+  try(Cursor c=getReadableDatabase().rawQuery("SELECT merchant,category FROM rules ORDER BY merchant",null)){
+   while(c.moveToNext())out.put(c.getString(0),c.getInt(1));
+  }
+  return out;
+ }
+ public void saveRule(String previous,String merchant,int category){
+  if(merchant.trim().isEmpty()||merchant.length()>90||category<=0||category>=Engine.CATEGORIES.length)throw new IllegalArgumentException("Invalid merchant category");
+  SQLiteDatabase db=getWritableDatabase();db.beginTransaction();
+  try{rule(merchant,category);if(previous!=null&&!Engine.key(previous).equals(Engine.key(merchant)))forgetRule(previous);db.setTransactionSuccessful();}finally{db.endTransaction();}
+ }
+ public void categorize(Engine.Tx x,boolean myntraPromo){
+  if(x.refund){x.category=0;x.confirmed=false;return;}
+  int remembered=rule(x.merchant);
+  x.category=Engine.category(x.merchant,java.time.LocalDate.parse(x.date),myntraPromo,remembered);
+  x.confirmed=remembered>0&&remembered<Engine.CATEGORIES.length;
+ }
  public JSONArray exportRows() throws JSONException {
   JSONArray a=new JSONArray();for(Engine.Tx x:all()){JSONObject o=new JSONObject();o.put("id",x.id);o.put("amountPaise",x.amount);o.put("merchant",x.merchant);o.put("date",x.date);o.put("category",x.category);o.put("confirmed",x.confirmed);o.put("refund",x.refund);o.put("duplicate",x.duplicate);o.put("active",x.active);o.put("received",x.received);o.put("source",x.source);o.put("event",x.event);o.put("linked",x.linked);a.put(o);}return a;
  }

@@ -48,11 +48,11 @@ The tag must match the manifest's base version. Manifest version `1.0` is accept
 Commit and push the release changes, then create the tag:
 
 ```powershell
-git tag -a v1.0.1 -m "Live+ Ledger 1.0.1"
-git push origin v1.0.1
+git tag -a v1.0.2 -m "Live+ Ledger 1.0.2"
+git push origin v1.0.2
 ```
 
-For a preview release, use a suffix such as `v1.0.1-beta.1`. Tags with a suffix publish a GitHub prerelease; plain version tags publish a normal release.
+For a preview release, use a suffix such as `v1.0.2-beta.1`. Tags with a suffix publish a GitHub prerelease; plain version tags publish a normal release.
 
 ## 4. Check the workflow
 

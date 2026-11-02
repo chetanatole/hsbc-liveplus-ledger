@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2 — 2026-11-03
+
+- Expand built-in suggestions to 119 names/keywords, including business-name aliases, shopping and utilities.
+- Match merchant-name boundaries and punctuation, prioritize grocery services over broader dining names, and leave ambiguous payment-platform names for review.
+- Add a Settings manager showing only remembered and user-added merchant mappings, with add/edit/rename/delete controls.
+- Apply saved merchant mappings consistently to captured alerts and pasted purchases without recategorizing existing transactions.
+
 ## 1.0.1 — 2026-11-03
 
 - Add saved Light and Dark themes, with Light as the default and Appearance below card/capture settings.

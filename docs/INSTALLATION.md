@@ -47,7 +47,8 @@ Read [PRIVACY.md](../PRIVACY.md) before granting notification access.
 - **Activity → Add purchase** opens the purchase editor. Tap the date to choose it from the calendar; the category list shows the estimated cashback rate.
 - **Paste alert** previews a transaction alert before importing it. Check for an existing purchase to avoid duplicates.
 - **Needs review** highlights the number of items needing attention in the selected period. Tap it to filter the list; tap it again to show all transactions. These controls remain visible while the transaction list scrolls.
-- In the purchase editor, **Remember this merchant’s category** is checked when a saved rule matches the displayed category. Check and save to create or update the rule; uncheck and save to forget it. The rule applies to future captured alerts for that merchant and does not recategorize other existing transactions. Cancel leaves the rule unchanged.
+- In the purchase editor, **Remember this merchant’s category** is checked when a saved rule matches the displayed category. Check and save to create or update the rule; uncheck and save to forget it. The rule applies to future captured alerts and pasted purchases for that merchant and does not recategorize other existing transactions. Cancel leaves the rule unchanged.
+- **Settings → Merchant categories → Manage merchant categories** shows your remembered and manually added mappings. Add a mapping or tap one to edit or delete it. Saved mappings override built-in suggestions; existing transactions keep their categories. See [merchant category matching](MERCHANTS.md).
 - **Settings → Appearance** offers **Light** and **Dark**, with Light as the default. The choice is saved automatically.
 
 ## Notification troubleshooting

@@ -44,14 +44,45 @@ public final class Engine {
   return p;
  }
  public static String key(String merchant) { return merchant.toLowerCase(Locale.ROOT).trim().replaceAll("\\s+"," "); }
+ private static String hintKey(String merchant) { return key(merchant).replaceAll("[^a-z0-9]+"," ").trim().replaceAll("\\s+"," "); }
+ private static class MerchantHints {
+  final int category; final String[] names; final Pattern pattern;
+  MerchantHints(int category,String... names){
+   this.category=category;this.names=names;List<String> alternatives=new ArrayList<>();
+   for(String name:names)alternatives.add(Pattern.quote(hintKey(name)));
+   pattern=Pattern.compile("(?<![a-z])(?:"+String.join("|",alternatives)+")(?![a-z])");
+  }
+  boolean matches(String name){return pattern.matcher(name).find();}
+ }
+ private static final MerchantHints EXCLUDED_HINTS=new MerchantHints(6,
+  "petrol","fuel","insurance","LIC of India","Life Insurance Corporation","HDFC Life","SBI Life","ICICI Prudential","Max Life","Bajaj Allianz","ICICI Lombard","Star Health","rent payment","wallet load","Indian Oil","IndianOil","Bharat Petroleum","Hindustan Petroleum","BPCL","HPCL");
+ private static final MerchantHints MYNTRA_HINTS=new MerchantHints(5,"Myntra");
+ private static final MerchantHints BASE_HINTS=new MerchantHints(5,"Amazon","Flipkart");
+ // Specific grocery aliases must run before broad dining aliases such as Swiggy.
+ private static final MerchantHints[] CATEGORY_HINTS={
+  new MerchantHints(2,"Blinkit","Blink Commerce","BlinkCommerce","Grofers","Instamart","BigBasket","Big Basket","Zepto","KiranaKart","Kirana Kart","Licious","Delightful Gourmet","FreshToHome","Fresh to Home","Country Delight","DMart","D Mart","Avenue Supermarts","supermarket","grocer","grocery","groceries"),
+  new MerchantHints(1,"Swiggy","Zomato","restaurant","restaurants","cafe","coffee","Domino","Dominos","Domino's","Jubilant Foodworks","McDonald","McDonalds","McDonald's","Hardcastle Restaurants","Westlife Foodworld","Burger King","Pizza Hut","KFC","Sapphire Foods","Devyani International","Starbucks","Subway","Barbeque Nation","Haldiram","Haldirams","Bikanervala","Wow Momo","Rebel Foods","Faasos","Behrouz","EatClub","Box8","Mojo Pizza","Chaayos","Chai Point"),
+  new MerchantHints(3,"Croma","Infiniti Retail","Reliance Digital","Vijay Sales","Decathlon","Shoppers Stop","Pantaloons","Westside","Uniqlo","H&M","Hennes Mauritz","Max Fashion","Lifestyle Stores","Nykaa","FSN E Commerce"),
+  new MerchantHints(4,"Airtel","Bharti Airtel","Reliance Jio","Jio Infocomm","Jio Fiber","JioFiber","Vodafone Idea","BSNL","MTNL","ACT Fibernet","Atria Convergence","Tata Play","Tata Sky","Hathway","You Broadband","BESCOM","MSEDCL","Tata Power","Adani Electricity","BSES","TANGEDCO","TNEB","Torrent Power","CESC")
+ };
+ public static Map<String,Integer> builtInMerchants(){
+  Map<String,Integer> names=new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  for(MerchantHints hints:new MerchantHints[]{EXCLUDED_HINTS,MYNTRA_HINTS,BASE_HINTS})for(String name:hints.names)names.put(name,hints.category);
+  for(MerchantHints hints:CATEGORY_HINTS)for(String name:hints.names)names.put(name,hints.category);
+  return names;
+ }
  public static int suggest(String merchant, LocalDate date,boolean myntraPromo) {
-  String s=key(merchant);
-  if(s.contains("myntra")) return myntraPromo && !date.isBefore(LocalDate.of(2026,7,31)) && !date.isAfter(LocalDate.of(2026,10,31))?3:5;
-  if(s.contains("amazon")||s.contains("flipkart"))return 5;
-  if(s.matches(".*(swiggy|zomato|restaurant|cafe|coffee|domino|mcdonald|burger king|pizza hut).*"))return 1;
-  if(s.matches(".*(blinkit|instamart|bigbasket|zepto|grocer|supermarket|dmart|d-mart).*"))return 2;
-  if(s.matches(".*(petrol|fuel|insurance|lic of india|rent payment|wallet load).*"))return 6;
+  String s=hintKey(merchant);
+  if(EXCLUDED_HINTS.matches(s))return 6;
+  if(MYNTRA_HINTS.matches(s))return myntraPromo&&!date.isBefore(LocalDate.of(2026,7,31))&&!date.isAfter(LocalDate.of(2026,10,31))?3:5;
+  if(BASE_HINTS.matches(s))return 5;
+  // A payment-bank descriptor alone does not establish a telecom purchase.
+  if(s.contains("payments bank")||s.contains("payment bank"))return 0;
+  for(MerchantHints hints:CATEGORY_HINTS)if(hints.matches(s))return hints.category;
   return 0;
+ }
+ public static int category(String merchant,LocalDate date,boolean myntraPromo,int remembered){
+  return remembered>0&&remembered<CATEGORIES.length?remembered:suggest(merchant,date,myntraPromo);
  }
  public static LocalDate cycleStart(LocalDate date,int statementDay) {
   if(statementDay==0) return date.withDayOfMonth(1);

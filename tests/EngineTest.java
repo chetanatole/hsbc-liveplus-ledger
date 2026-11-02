@@ -54,6 +54,25 @@ public class EngineTest {
   check(Engine.totals(reviewRows,octoberStart,octoberEnd,120000).review==4,"overview review count agrees with activity badge");
   suggested.confirmed=true;unclassified.category=2;possibleDuplicate.duplicate=false;unlinkedRefund.linked="15";
   check(Engine.reviewCount(reviewRows,octoberStart,octoberEnd)==0,"review badge clears after items are resolved");
-  System.out.println("PASS: "+checks+" parser, reward, refund, period, and review checks");
+  LocalDate current=LocalDate.of(2026,11,3);
+  for(Map.Entry<String,Integer> rule:Engine.builtInMerchants().entrySet())check(Engine.suggest(rule.getKey(),current,false)==rule.getValue(),"built-in alias: "+rule.getKey());
+  check(Engine.suggest("SWIGGY INSTAMART",current,false)==2,"specific grocery service wins over Swiggy dining");
+  check(Engine.suggest("BLINK COMMERCE PVT LTD",current,false)==2,"Blinkit legal descriptor");
+  check(Engine.suggest("DELIGHTFUL GOURMET PVT LTD",current,false)==2,"Licious legal descriptor");
+  check(Engine.suggest("SWIGGY PVT LTD FOOD1",current,false)==1,"dining descriptor still matches");
+  check(Engine.suggest("IAP-BHARTI.AIRTEL LTD",current,false)==4,"punctuated telecom descriptor");
+  check(Engine.suggest("AIRTEL PAYMENTS BANK",current,false)==0,"payment bank is not assumed to be telecom");
+  check(Engine.suggest("INFINITI RETAIL LTD",current,false)==3,"Croma legal descriptor");
+  check(Engine.suggest("UNIQLO1234",current,false)==3,"numeric outlet suffix");
+  check(Engine.suggest("RAZORPAY*CROMA",current,false)==3,"identified merchant after gateway prefix");
+  for(String name:new String[]{"Razorpay","PayU","Cashfree","BillDesk","PhonePe","Paytm","Reliance Retail","Trent","Bajaj Finserv","DEMARTIAL","Supermarketplace","Splice Services","LIC"})check(Engine.suggest(name,current,false)==0,"ambiguous merchant remains unknown: "+name);
+  check(Engine.suggest("AMAZON FRESH",current,false)==5,"Amazon base-rate exception precedes grocery hints");
+  check(Engine.suggest("AMAZON wallet load",current,false)==6,"explicit wallet loading excluded before merchant base rate");
+  check(Engine.suggest("Myntra",LocalDate.of(2026,7,30),true)==5,"Myntra offer does not start early");
+  check(Engine.category("Blinkit",current,false,6)==6,"saved category overrides built-in suggestion");
+  check(Engine.category("My Local Shop",current,false,2)==2,"custom mapping classifies an unknown merchant");
+  check(Engine.category("Blinkit",current,false,-1)==2,"no saved mapping uses built-in suggestion");
+  check(Engine.category("Blinkit",current,false,0)==2&&Engine.category("Blinkit",current,false,99)==2,"invalid saved categories do not suppress suggestions");
+  System.out.println("PASS: "+checks+" parser, reward, refund, period, review, and merchant checks; "+Engine.builtInMerchants().size()+" built-in aliases");
  }
 }
