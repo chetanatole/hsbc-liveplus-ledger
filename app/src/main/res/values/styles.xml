@@ -1,0 +1,73 @@
+<resources>
+  <attr name="ledgerTabBackground" format="color" />
+  <attr name="ledgerTabBorder" format="color" />
+  <attr name="ledgerSurface" format="color" />
+  <attr name="ledgerNotice" format="color" />
+  <attr name="ledgerAttention" format="color" />
+  <attr name="ledgerSuccess" format="color" />
+  <attr name="ledgerSelected" format="color" />
+  <attr name="ledgerOnSelected" format="color" />
+  <attr name="ledgerReview" format="color" />
+  <attr name="ledgerOnReview" format="color" />
+
+  <style name="AppTheme" parent="AppTheme.Light" />
+  <style name="AppTheme.Light" parent="android:style/Theme.Material.Light.NoActionBar">
+    <item name="android:windowBackground">#F4F6F1</item>
+    <item name="android:colorBackground">#F4F6F1</item>
+    <item name="android:textColorPrimary">#142D35</item>
+    <item name="android:textColorSecondary">#5B6E70</item>
+    <item name="android:colorAccent">#267648</item>
+    <item name="android:alertDialogTheme">@style/AppDialog.Light</item>
+    <item name="android:forceDarkAllowed">false</item>
+    <item name="android:windowLightStatusBar">true</item>
+    <item name="android:windowLightNavigationBar">true</item>
+    <item name="ledgerTabBackground">#FFFFFF</item>
+    <item name="ledgerTabBorder">#71858A</item>
+    <item name="ledgerSurface">#FFFFFF</item>
+    <item name="ledgerNotice">#FFEBD3</item>
+    <item name="ledgerAttention">#B54529</item>
+    <item name="ledgerSuccess">#1E6E41</item>
+    <item name="ledgerSelected">#142D35</item>
+    <item name="ledgerOnSelected">#FFFFFF</item>
+    <item name="ledgerReview">#B54529</item>
+    <item name="ledgerOnReview">#FFFFFF</item>
+  </style>
+  <style name="AppTheme.Dark" parent="android:style/Theme.Material.NoActionBar">
+    <item name="android:windowBackground">#101A1E</item>
+    <item name="android:colorBackground">#101A1E</item>
+    <item name="android:textColorPrimary">#E5F0ED</item>
+    <item name="android:textColorSecondary">#A6B8B6</item>
+    <item name="android:colorAccent">#B9EDCC</item>
+    <item name="android:alertDialogTheme">@style/AppDialog.Dark</item>
+    <item name="android:forceDarkAllowed">false</item>
+    <item name="android:windowLightStatusBar">false</item>
+    <item name="android:windowLightNavigationBar">false</item>
+    <item name="ledgerTabBackground">#243B44</item>
+    <item name="ledgerTabBorder">#789C9F</item>
+    <item name="ledgerSurface">#1B2B30</item>
+    <item name="ledgerNotice">#3E3023</item>
+    <item name="ledgerAttention">#FFAD90</item>
+    <item name="ledgerSuccess">#9AE1B3</item>
+    <item name="ledgerSelected">#B9EDCC</item>
+    <item name="ledgerOnSelected">#142D35</item>
+    <item name="ledgerReview">#6E2C1C</item>
+    <item name="ledgerOnReview">#FFE0D6</item>
+  </style>
+  <style name="AppDialog.Light" parent="android:style/Theme.Material.Light.Dialog.Alert">
+    <item name="android:datePickerStyle">@style/CalendarPicker</item>
+    <item name="android:colorAccent">#267648</item>
+    <item name="android:colorBackground">#FFFFFF</item>
+    <item name="android:textColorPrimary">#142D35</item>
+    <item name="android:textColorSecondary">#5B6E70</item>
+  </style>
+  <style name="AppDialog.Dark" parent="android:style/Theme.Material.Dialog.Alert">
+    <item name="android:datePickerStyle">@style/CalendarPicker</item>
+    <item name="android:colorAccent">#B9EDCC</item>
+    <item name="android:colorBackground">#1B2B30</item>
+    <item name="android:textColorPrimary">#E5F0ED</item>
+    <item name="android:textColorSecondary">#A6B8B6</item>
+  </style>
+  <style name="CalendarPicker" parent="android:style/Widget.Material.DatePicker">
+    <item name="android:datePickerMode">calendar</item>
+  </style>
+</resources>

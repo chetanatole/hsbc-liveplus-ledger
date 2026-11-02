@@ -33,7 +33,7 @@ public class AlertListener extends NotificationListenerService {
  private void capture(StatusBarNotification sbn,String context,String body,long time){
   try(Store s=new Store(this)){
    SharedPreferences p=Store.prefs(this);Engine.Parsed parsed=Engine.parse(context,body,p.getString("last4",""),time);if(parsed==null)return;
-   Engine.Tx x=new Engine.Tx();x.amount=parsed.amount;x.merchant=parsed.merchant;x.date=parsed.date;x.refund=parsed.refund;x.received=time;x.source=parsed.dateFromAlert?"Alert · date parsed":"Alert · received date";
+   Engine.Tx x=new Engine.Tx();x.amount=parsed.amount;x.merchant=parsed.merchant;x.date=parsed.date;x.refund=parsed.refund;x.received=time;x.source="Alert";
    x.event=hash(sbn.getPackageName()+"|"+sbn.getKey()+"|"+time+"|"+body);
    int learned=s.rule(x.merchant);
    x.category=learned>=0?learned:Engine.suggest(x.merchant,LocalDate.parse(x.date),p.getBoolean("myntra",false));

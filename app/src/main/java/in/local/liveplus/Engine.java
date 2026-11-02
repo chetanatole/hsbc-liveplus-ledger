@@ -9,7 +9,7 @@ import java.util.regex.*;
 
 /** Pure Java parsing and calculations; no network or Android dependencies. */
 public final class Engine {
- public static final String[] CATEGORIES={"Needs category","Dining / food delivery","Groceries","Shopping","Utilities","Other eligible · 1.5%","Excluded · 0%"};
+ public static final String[] CATEGORIES={"Needs category","Dining / food delivery · 10%","Groceries · 10%","Shopping · 10%","Utilities · 10%","Other eligible · 1.5%","Excluded · 0%"};
  public static long money(String s) { return new BigDecimal(s.replace(",", "").trim()).setScale(2,RoundingMode.UNNECESSARY).movePointRight(2).longValueExact(); }
  public static class Tx {
   public long id, amount, received; public String merchant="",date="",source="manual",event="",linked=""; public int category=0; public boolean confirmed=false,refund=false,duplicate=false,active=true;
@@ -64,6 +64,16 @@ public final class Engine {
   YearMonth m=YearMonth.from(start);LocalDate end=m.atDay(Math.min(statementDay,m.lengthOfMonth()));
   if(end.isBefore(start)){m=m.plusMonths(1);end=m.atDay(Math.min(statementDay,m.lengthOfMonth()));}return end;
  }
+ public static boolean needsReview(Tx x) { return x.refund?x.linked.isEmpty():!x.confirmed||x.duplicate||x.category==0; }
+ public static int reviewCount(List<Tx> rows,LocalDate start,LocalDate end) {
+  int count=0;
+  for(Tx x:rows){
+   if(!x.active||!needsReview(x))continue;
+   LocalDate date=LocalDate.parse(x.date);
+   if(!date.isBefore(start)&&!date.isAfter(end))count++;
+  }
+  return count;
+ }
  public static class Totals {public long accelerated,other,excluded,unknown,refunds,cashback,remaining; public int review;}
  public static Totals totals(List<Tx> rows,LocalDate start,LocalDate end,long cap) {
   Totals t=new Totals();
@@ -72,7 +82,7 @@ public final class Engine {
    long net=x.amount;
    for(Tx r:rows)if(r.active&&r.refund&&r.linked.equals(String.valueOf(x.id)))net-=r.amount;
    net=Math.max(0,net);
-   if(!x.confirmed||x.duplicate||x.category==0)t.review++;
+   if(needsReview(x))t.review++;
    if(x.duplicate||x.category==0){t.unknown+=net;continue;}
    if(x.category>=1&&x.category<=4)t.accelerated+=net;
    else if(x.category==5)t.other+=net;else t.excluded+=net;

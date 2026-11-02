@@ -39,6 +39,21 @@ public class EngineTest {
   Engine.Tx r=purchase(6,300000,0);r.refund=true;rows.add(r);t=Engine.totals(rows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);check(t.accelerated==1300000&&t.refunds==300000,"unlinked refund excluded");
   r.linked="1";r.date="2026-11-02";t=Engine.totals(rows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);check(t.accelerated==1000000&&t.cashback==101500&&t.remaining==200000,"linked later refund reduces original period");
   rows.get(0).active=false;t=Engine.totals(rows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);check(t.accelerated==0,"deleted purchase excluded");
-  System.out.println("PASS: "+checks+" parser, reward, refund, and period checks");
+  List<Engine.Tx> reviewRows=new ArrayList<>();
+  Engine.Tx suggested=purchase(10,10000,1);suggested.confirmed=false;reviewRows.add(suggested);
+  Engine.Tx unclassified=purchase(11,10000,0);reviewRows.add(unclassified);
+  Engine.Tx possibleDuplicate=purchase(12,10000,1);possibleDuplicate.duplicate=true;reviewRows.add(possibleDuplicate);
+  Engine.Tx unlinkedRefund=purchase(13,10000,0);unlinkedRefund.refund=true;reviewRows.add(unlinkedRefund);
+  Engine.Tx linkedRefund=purchase(14,10000,0);linkedRefund.refund=true;linkedRefund.linked="10";reviewRows.add(linkedRefund);
+  reviewRows.add(purchase(15,10000,1));
+  Engine.Tx deleted=purchase(16,10000,0);deleted.active=false;reviewRows.add(deleted);
+  Engine.Tx earlier=purchase(17,10000,0);earlier.date="2026-09-30";reviewRows.add(earlier);
+  Engine.Tx later=purchase(18,10000,0);later.date="2026-11-01";reviewRows.add(later);
+  LocalDate octoberStart=LocalDate.of(2026,10,1),octoberEnd=LocalDate.of(2026,10,31);
+  check(Engine.reviewCount(reviewRows,octoberStart,octoberEnd)==4,"review badge includes suggestions, unknowns, duplicates and unlinked refunds only in the selected period");
+  check(Engine.totals(reviewRows,octoberStart,octoberEnd,120000).review==4,"overview review count agrees with activity badge");
+  suggested.confirmed=true;unclassified.category=2;possibleDuplicate.duplicate=false;unlinkedRefund.linked="15";
+  check(Engine.reviewCount(reviewRows,octoberStart,octoberEnd)==0,"review badge clears after items are resolved");
+  System.out.println("PASS: "+checks+" parser, reward, refund, period, and review checks");
  }
 }

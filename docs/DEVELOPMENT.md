@@ -18,6 +18,7 @@ app/src/main/java/in/local/liveplus/
   AlertListener.java             Notification capture
   MainActivity.java              Native Android interface
 app/src/main/res/drawable/        Launcher artwork
+app/src/main/res/values/          Light/dark themes and calendar styling
 tests/EngineTest.java             Parser and calculation tests
 tools/Compile.java               Java compilation helper
 tools/test.ps1                   Standalone test command
@@ -50,7 +51,7 @@ The script runs tests, compiles resources and Java, converts classes with D8, al
 
 Tests require a JDK but not the Android SDK. The script also works under PowerShell 7 on Linux/macOS and uses `JAVA_HOME` or Java on `PATH` when `-JavaHome` is omitted.
 
-Coverage includes parsing, card filtering, OTP/decline/payment rejection, category suggestions, promotion expiry, caps, period boundaries, duplicates and refunds. Use the [device checklist](../DEVICE-CHECK.md) for Android-specific behavior.
+Coverage includes parsing, card filtering, OTP/decline/payment rejection, category suggestions, promotion expiry, caps, period boundaries, duplicates, refunds and review counts. Use the [device checklist](../DEVICE-CHECK.md) for Android-specific behavior.
 
 ## Signing
 

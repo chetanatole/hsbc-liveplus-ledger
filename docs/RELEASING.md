@@ -1,6 +1,6 @@
 # Generate an APK release
 
-The [release workflow](../.github/workflows/release.yml) builds and publishes a signed APK when a version tag is pushed.
+The [release workflow](../.github/workflows/release.yml) builds and publishes a signed APK when a version tag is pushed. A push to `main` runs tests but does not publish a release.
 
 Release assets:
 
@@ -48,11 +48,11 @@ The tag must match the manifest's base version. Manifest version `1.0` is accept
 Commit and push the release changes, then create the tag:
 
 ```powershell
-git tag -a v1.0.0 -m "Live+ Ledger 1.0.0"
-git push origin v1.0.0
+git tag -a v1.0.1 -m "Live+ Ledger 1.0.1"
+git push origin v1.0.1
 ```
 
-For a preview release, use a suffix such as `v1.0.0-beta.1`. Tags with a suffix publish a GitHub prerelease; plain version tags publish a normal release.
+For a preview release, use a suffix such as `v1.0.1-beta.1`. Tags with a suffix publish a GitHub prerelease; plain version tags publish a normal release.
 
 ## 4. Check the workflow
 
@@ -66,6 +66,17 @@ Open [GitHub Actions](https://github.com/chetanatole/hsbc-liveplus-ledger/action
 6. Publishes the APK and checksum under [Releases](https://github.com/chetanatole/hsbc-liveplus-ledger/releases).
 
 A failed test, missing secret, signature mismatch or build error stops publication. Existing release assets are not silently replaced; use a new version/tag for a new release.
+
+## Verify a download
+
+Download the APK and `SHA256SUMS.txt` from the same release. In PowerShell, from that download folder:
+
+```powershell
+Get-FileHash -LiteralPath './LivePlus-Ledger.apk' -Algorithm SHA256
+Get-Content -LiteralPath './SHA256SUMS.txt'
+```
+
+The hashes must match; letter case does not matter. This checksum identifies the APK file. The signing certificate fingerprint identifies the signing identity and normally stays the same across releases.
 
 ## Download links
 

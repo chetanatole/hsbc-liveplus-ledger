@@ -42,6 +42,14 @@ If Android restricts notification access, open **Settings → Apps → Live+ Led
 
 Read [PRIVACY.md](../PRIVACY.md) before granting notification access.
 
+## Using the ledger
+
+- **Activity → Add purchase** opens the purchase editor. Tap the date to choose it from the calendar; the category list shows the estimated cashback rate.
+- **Paste alert** previews a transaction alert before importing it. Check for an existing purchase to avoid duplicates.
+- **Needs review** highlights the number of items needing attention in the selected period. Tap it to filter the list; tap it again to show all transactions. These controls remain visible while the transaction list scrolls.
+- In the purchase editor, **Remember this merchant’s category** is checked when a saved rule matches the displayed category. Check and save to create or update the rule; uncheck and save to forget it. The rule applies to future captured alerts for that merchant and does not recategorize other existing transactions. Cancel leaves the rule unchanged.
+- **Settings → Appearance** offers **Light** and **Dark**, with Light as the default. The choice is saved automatically.
+
 ## Notification troubleshooting
 
 - Keep transaction notifications enabled with their text available to notification listeners.
@@ -53,6 +61,6 @@ Read [PRIVACY.md](../PRIVACY.md) before granting notification access.
 
 ## Updates and changing phones
 
-Export a JSON backup before uninstalling or changing phones. Updates require the same signing key. A differently signed APK may require uninstalling the existing app, which removes its local data.
+Install an update APK over the existing app to retain local transactions and settings. Export a JSON backup before uninstalling or changing phones. Updates require the same signing key. A differently signed APK may require uninstalling the existing app, which removes its local data.
 
-Restore requires an empty ledger and leaves capture off until reconfigured.
+Restore requires an empty ledger and leaves capture off until reconfigured. Exports include transactions and card/reward settings; appearance, notification source selection and remembered merchant rules are not included.

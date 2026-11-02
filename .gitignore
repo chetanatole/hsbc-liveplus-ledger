@@ -46,3 +46,6 @@ Desktop.ini
 .DS_Store
 *.swp
 *.tmp
+
+# Chat attachments are copied into reviewed documentation assets as needed
+/.codex-remote-attachments/

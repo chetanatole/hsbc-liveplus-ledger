@@ -10,7 +10,7 @@ Unmatched content is discarded. OTP/failed-transaction patterns are rejected. Lo
 
 ## Stored data
 
-Stored fields include amount, merchant, date, category, review/duplicate state, refund links, receipt time, source description and a SHA-256 event fingerprint for duplicates. Preferences store the card suffix, period, cap, source-app selection and other settings; exact merchant-category rules can be remembered.
+Stored fields include amount, merchant, date, category, review/duplicate state, refund links, receipt time, source description and a SHA-256 event fingerprint for duplicates. Preferences store the card suffix, period, cap, source-app selection, appearance and other settings; exact merchant-category rules can be remembered.
 
 Raw notification bodies are not saved. The app does not read the SMS inbox or automatically import historical messages.
 
@@ -22,7 +22,7 @@ Transactions/rules use an app-private SQLite database; preferences use app-priva
 
 No internet permission, analytics, ads or cloud database are included. Opening the service-guide link launches an external browser with its own data handling.
 
-JSON exports use Android's document picker. Selecting a cloud provider can upload the chosen export there. Backups contain financial data and the card suffix; keep them private. Restore currently restores transactions/settings, not learned merchant rules. Capture remains off until reconfigured.
+JSON exports use Android's document picker. Selecting a cloud provider can upload the chosen export there. Backups contain financial data and the card suffix; keep them private. Exports contain transactions and card/reward settings. Appearance, notification source selection and learned merchant rules are not included. Capture remains off until reconfigured after restore.
 
 ## Repository and screenshots
 

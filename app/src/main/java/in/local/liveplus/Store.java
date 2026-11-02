@@ -25,6 +25,7 @@ public final class Store extends SQLiteOpenHelper {
   long id=getWritableDatabase().insertWithOnConflict("tx",null,v,SQLiteDatabase.CONFLICT_IGNORE);if(id>0)x.id=id;return id;
  }
  public void rule(String merchant,int category){ContentValues v=new ContentValues();v.put("merchant",Engine.key(merchant));v.put("category",category);getWritableDatabase().insertWithOnConflict("rules",null,v,SQLiteDatabase.CONFLICT_REPLACE);}
+ public void forgetRule(String merchant){getWritableDatabase().delete("rules","merchant=?",new String[]{Engine.key(merchant)});}
  public int rule(String merchant){try(Cursor c=getReadableDatabase().rawQuery("SELECT category FROM rules WHERE merchant=?",new String[]{Engine.key(merchant)})){return c.moveToFirst()?c.getInt(0):-1;}}
  public JSONArray exportRows() throws JSONException {
   JSONArray a=new JSONArray();for(Engine.Tx x:all()){JSONObject o=new JSONObject();o.put("id",x.id);o.put("amountPaise",x.amount);o.put("merchant",x.merchant);o.put("date",x.date);o.put("category",x.category);o.put("confirmed",x.confirmed);o.put("refund",x.refund);o.put("duplicate",x.duplicate);o.put("active",x.active);o.put("received",x.received);o.put("source",x.source);o.put("event",x.event);o.put("linked",x.linked);a.put(o);}return a;
