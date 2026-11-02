@@ -26,7 +26,7 @@ Independent project; not affiliated with HSBC. Merchant classifications, posting
 
 | Overview | Activity |
 | --- | --- |
-| <img src="docs/screenshots/overview.jpg" width="280" alt="Overview with the statement period, estimated cashback and remaining eligible spend"> | <img src="docs/screenshots/activity.jpg" width="280" alt="Activity with Add purchase, Paste alert, Needs review and cashback-rate labels"> |
+| <img src="docs/screenshots/overview-v1.0.1.jpg" width="280" alt="Overview with the statement period, estimated cashback and remaining eligible spend"> | <img src="docs/screenshots/activity-v1.0.1.jpg" width="280" alt="Activity with Add purchase, Paste alert, Needs review and cashback-rate labels"> |
 
 ## Install and set up
 
