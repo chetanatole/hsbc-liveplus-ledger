@@ -12,15 +12,14 @@ Independent project; not affiliated with HSBC. Merchant classifications, posting
 
 ## Features
 
-- Accelerated-spend, cashback and remaining-cap dashboard.
-- Calendar-month or statement-period tracking and history.
-- Light and Dark themes in Settings → Appearance, with Light as the default.
-- Capture of new matching HSBC transaction notifications from selected apps.
-- Suggested categories, manual corrections and remembered merchant categories.
-- Highlighted review counts, duplicate review and full/partial refund linking.
-- Calendar date selection for purchases and locally parsed pasted-alert imports.
-- Always-accessible Activity actions and saved scroll positions.
-- JSON backup export and restore through Android's document picker.
+- Track accelerated spending, estimated cashback and remaining room under the cashback cap.
+- View spending history by calendar month or statement period.
+- Automatically capture matching HSBC transaction notifications from selected apps.
+- Suggest spending categories, make corrections and remember merchant categories.
+- Review uncertain transactions and possible duplicates, and link full or partial refunds.
+- Add purchases manually or import pasted transaction alerts.
+- Export and restore JSON backups.
+- Light and dark mode support.
 
 ## Screenshots
 
