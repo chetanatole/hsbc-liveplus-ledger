@@ -73,7 +73,7 @@ Edition switching preserves ledger/settings/mappings but turns capture off and c
 
 ## Settings and presentation
 
-Both manifests use the application label Live+ Ledger, including the notification-access service label. The installed UI has no edition names, Save settings control or capture diagnostics. Temporary diagnostic reports from earlier builds are removed on open. Keep download distinctions in README/install/release docs.
+Both manifests use the application label Live+ Ledger, including the notification-access service label. The installed UI displays only versionName (for example, 1.0.3). The integer versionCode stays internal for Android update ordering. The UI has no edition names, Save settings control or capture diagnostics. Temporary diagnostic reports from earlier builds are removed on open. Keep download distinctions in README/install/release docs.
 
 Text settings are validated by SettingsValues before writes. Valid changes are debounced for 650 ms and flushed on field exit, navigation, backgrounding and state saving. Invalid drafts keep the last valid stored value. Card changes are rejected for a populated ledger. Switches, merchant-source choice and promotion preference apply immediately. Capture activation validates card inputs and explicitly requests missing access. Returning from notification Settings activates only a user-requested pending capture action. Typing cannot trigger a permission prompt. Transaction/mapping Save actions remain explicit.
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Refresh the Overview and Activity screenshots and keep the download section focused on APK selection.
+- Show only the release version in Settings, with Android’s version code retained internally.
+
 ## 1.0.3 — 2026-11-07
 
 - Provide separate Notifications and SMS APK downloads with the same Live+ Ledger name, app identity and retained signing key. Neither reads existing SMS or scans the inbox.

@@ -23,7 +23,7 @@ Starting with **1.0.3**, releases provide two APKs. Choose the access method you
 
 Notification capture can miss purchase alerts grouped with an unread OTP because Android hides the content. Clear that conversation's notifications before later alerts, or paste a missed purchase. Direct SMS avoids notification grouping, but Android SMS permission and OTP restrictions still apply; RCS is not supported by the SMS receiver.
 
-Both APKs appear on your phone as **Live+ Ledger**. The names above distinguish downloads only. Settings apply automatically after valid edits.
+Both APKs appear on your phone as **Live+ Ledger**. The names above distinguish downloads only.
 
 Install **one edition at a time**. Both share the app identity and signing key; a compatible edition switch preserves local data and turns capture off until you enable the new method. See [edition details](docs/EDITIONS.md) and [step-by-step installation](docs/INSTALLATION.md). Older releases use `LivePlus-Ledger.apk` for the notification-based app.
 
@@ -42,7 +42,7 @@ Install **one edition at a time**. Both share the app identity and signing key; 
 
 | Overview | Activity |
 | --- | --- |
-| <img src="docs/screenshots/overview-v1.0.1.jpg" width="280" alt="Overview with the statement period, estimated cashback and remaining eligible spend"> | <img src="docs/screenshots/activity-v1.0.1.jpg" width="280" alt="Activity with Add purchase, Paste alert, Needs review and cashback-rate labels"> |
+| <img src="docs/screenshots/overview-v1.0.3.jpg" width="280" alt="Overview with eligible spend, category cashback breakdown and remaining accelerated spend"> | <img src="docs/screenshots/activity-v1.0.3.jpg" width="280" alt="Activity with merchant transactions, cashback categories and purchase, paste and review controls"> |
 
 ## Install and set up
 

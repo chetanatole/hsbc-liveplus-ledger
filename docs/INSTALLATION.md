@@ -11,7 +11,7 @@ From release **1.0.3**, choose **one** APK from [GitHub Releases](https://github
 
 1. Open the chosen APK on an Android 8.0+ phone.
 2. If prompted, allow installation from the browser/file manager used to open it. This is called sideloading: installing outside an app store.
-3. Open Live+ Ledger after installation and go to Settings. Both downloads use the name Live+ Ledger on the phone. The installed version/build appears in Settings.
+3. Open Live+ Ledger after installation and go to Settings. Both downloads use the name Live+ Ledger on the phone. The release version appears in Settings.
 
 Both editions have the same ledger features. Automatic capture is optional; manual entry and Paste alert work without either capture permission.
 

@@ -356,6 +356,6 @@ public class MainActivity extends Activity {
   }
  }catch(Exception e){toast("Could not complete operation: "+e.getMessage());}}
  String appVersion(){
-  try{PackageInfo info=getPackageManager().getPackageInfo(getPackageName(),0);long code=Build.VERSION.SDK_INT>=28?info.getLongVersionCode():info.versionCode;return info.versionName+" · build "+code;}catch(PackageManager.NameNotFoundException ignored){return "unknown";}
+  try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(PackageManager.NameNotFoundException ignored){return "unknown";}
  }
 }
