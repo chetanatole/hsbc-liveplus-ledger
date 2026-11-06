@@ -10,11 +10,28 @@ Independent project; not affiliated with HSBC. Merchant classifications, posting
 
 [APK releases](https://github.com/chetanatole/hsbc-liveplus-ledger/releases) · [Installation](docs/INSTALLATION.md) · [MIT License](LICENSE)
 
+## Download
+
+Starting with **1.0.3**, releases provide two APKs. Choose the access method you are comfortable granting:
+
+| Download | Access | How capture works |
+| --- | --- | --- |
+| **[LivePlus-Ledger-Notifications.apk](https://github.com/chetanatole/hsbc-liveplus-ledger/releases/latest/download/LivePlus-Ledger-Notifications.apk)** | Notification access; **no SMS permission** | Checks new notifications from one selected SMS messaging app. Choose this if you prefer not to grant SMS access. |
+| **[LivePlus-Ledger-SMS.apk](https://github.com/chetanatole/hsbc-liveplus-ledger/releases/latest/download/LivePlus-Ledger-SMS.apk)** | `RECEIVE_SMS`; **no notification access** | Checks new incoming SMS delivered after capture is enabled. Choose this if you are comfortable granting incoming-SMS access. |
+
+**Neither edition reads existing SMS, scans your inbox or sends messages.** The SMS edition does not request `READ_SMS`; incoming access covers all senders, with HSBC/card filtering performed locally. OTPs and unrelated messages are discarded, and only transaction details are saved. Both editions have the same ledger features and no internet permission.
+
+Notification capture can miss purchase alerts grouped with an unread OTP because Android hides the content. Clear that conversation's notifications before later alerts, or paste a missed purchase. Direct SMS avoids notification grouping, but Android SMS permission and OTP restrictions still apply; RCS is not supported by the SMS receiver.
+
+Both APKs appear on your phone as **Live+ Ledger**. The names above distinguish downloads only. Settings apply automatically after valid edits.
+
+Install **one edition at a time**. Both share the app identity and signing key; a compatible edition switch preserves local data and turns capture off until you enable the new method. See [edition details](docs/EDITIONS.md) and [step-by-step installation](docs/INSTALLATION.md). Older releases use `LivePlus-Ledger.apk` for the notification-based app.
+
 ## Features
 
 - Track accelerated spending, estimated cashback and remaining room under the cashback cap.
 - View spending history by calendar month or statement period.
-- Automatically capture matching HSBC transaction notifications from selected apps.
+- Automatically capture matching HSBC purchases through your chosen Notifications or SMS edition.
 - Suggest spending categories and manage your own merchant-to-category mappings.
 - Review uncertain transactions and possible duplicates, and link full or partial refunds.
 - Add purchases manually or import pasted transaction alerts.
@@ -29,28 +46,27 @@ Independent project; not affiliated with HSBC. Merchant classifications, posting
 
 ## Install and set up
 
-Download `LivePlus-Ledger.apk` from a [release](https://github.com/chetanatole/hsbc-liveplus-ledger/releases), or build it from source.
+Download your chosen APK from a [release](https://github.com/chetanatole/hsbc-liveplus-ledger/releases), or build it from source.
 
-1. Install the APK on Android 8.0 or newer.
-2. Enter only your card's last four digits.
-3. Configure the reward period and cashback cap.
-4. Select the SMS/banking notification source apps and save capture settings.
-5. Enable Android notification access.
+1. Install the chosen edition on Android 8.0 or newer, then open it.
+2. Enter only your card's last four digits and configure the reward period/cashback cap.
+3. **Notifications:** choose one SMS messaging app, turn on capture and grant notification access when prompted.
+4. **SMS:** turn on capture, read the disclosure and approve Android's incoming-SMS permission. No source-app selection or notification access is needed.
 
-See [installation and troubleshooting](docs/INSTALLATION.md), including Play Protect and restricted-settings prompts.
+Automatic capture is optional. Manual entry and Paste alert work without either capture permission. See [installation and troubleshooting](docs/INSTALLATION.md) for permission denial, installer restrictions, OTP redaction and Play Protect prompts.
 
 ## Build and test
 
 APK builds require Windows PowerShell, JDK 17, Android SDK Platform 35 and Build-Tools 35.0.0.
 
 ```powershell
-./build.ps1 `
+./tools/build-all.ps1 `
   -JavaHome 'C:/path/to/jdk-17' `
   -AndroidJar 'C:/path/to/Android/Sdk/platforms/android-35/android.jar' `
   -BuildTools 'C:/path/to/Android/Sdk/build-tools/35.0.0'
 ```
 
-Output: `build/LivePlus-Ledger.apk`. Android Studio, an emulator and Gradle are not required.
+Outputs: `build/LivePlus-Ledger-Notifications.apk`, `build/LivePlus-Ledger-SMS.apk` and `build/SHA256SUMS.txt`. To build one edition, use `./build.ps1 -Edition notifications` or `./build.ps1 -Edition sms` with the same tool paths. Android Studio, an emulator and Gradle are not required.
 
 Run parser and calculation tests with a JDK:
 
@@ -66,7 +82,7 @@ The default accelerated cashback cap is ₹1,200. See [reward assumptions](docs/
 
 Suggested categories are provisional. Unknown categories and possible duplicates are excluded until reviewed. Refunds require linking to an original purchase.
 
-The app stores data on the device and has no internet permission, analytics, advertising SDKs or SMS inbox access. Read [PRIVACY.md](PRIVACY.md) for notification access, stored fields, backups and deletion.
+Both editions store data on the device and have no internet permission, analytics, advertising SDKs or SMS inbox access. Read [PRIVACY.md](PRIVACY.md) for each edition's access, new-SMS-only handling, stored fields, backups and deletion.
 
 ## Contributing and license
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.3 — 2026-11-07
+
+- Provide separate Notifications and SMS APK downloads with the same Live+ Ledger name, app identity and retained signing key. Neither reads existing SMS or scans the inbox.
+- Add opt-in new incoming-SMS capture using only `RECEIVE_SMS`, with consent, permission-denial handling, multipart parsing and duplicate protection. This APK has no notification listener or `READ_SMS` permission.
+- Limit notification capture to one installed SMS messaging app. Explain Android's OTP-related content restriction in both Overview and Settings, including clearing the conversation notification before later alerts and pasting an already missed purchase.
+- Improve extraction of readable grouped purchases around OTP entries, and prevent replay of known history through empty/hidden notification updates. Baseline visible history when capture starts and retain event identity when retrying a failed save.
+- Apply valid settings edits automatically, with inline validation, protected card changes and explicit permission actions for capture access.
+- Show spend and estimated cashback for the 10% and 1.5% groups, respect the accelerated cap and linked refunds, and show excluded 0% spend without a cashback sub-row. Match the total layout to the category breakdown.
+- Preserve local ledger/settings/merchant mappings during compatible edition switches, with capture off until the new access method is enabled.
+- Publish both APKs with individual checksums and enforce packaged permission/component isolation. Update installation, privacy, edition comparison and release documentation with direct downloads.
+
 ## 1.0.2 — 2026-11-03
 
 - Expand built-in suggestions to 119 names/keywords, including business-name aliases, shopping and utilities.

@@ -1,0 +1,108 @@
+import in.local.liveplus.Engine;
+import in.local.liveplus.NotificationCapture;
+import java.time.*;
+
+public class NotificationCaptureTest {
+ static int checks;
+ static void check(boolean value,String name){checks++;if(!value)throw new AssertionError(name);}
+ static final long NOW=LocalDate.of(2026,11,7).atTime(12,0).atZone(ZoneId.of("Asia/Kolkata")).toInstant().toEpochMilli();
+ static final long START=NOW-60000;
+ static final String OTP="HSBC OTP [redacted] for INR 101.23 purchase on credit card xx1234. Do not share it.";
+ static final String PURCHASE="HSBC Credit Card xx1234 used at ZOMATO for INR 101.23 on 06/11/26. Avl limit INR 50000.00; due INR 1000.00. Call +910000000000 to report fraud.";
+ static final String SECOND=PURCHASE.replace("101.23","202.34");
+ static NotificationCapture.Envelope envelope(){NotificationCapture.Envelope e=new NotificationCapture.Envelope();e.source="synthetic.messages";e.key="thread";e.title="HSBC";e.posted=NOW;return e;}
+ static NotificationCapture.Batch collect(NotificationCapture.Envelope e,NotificationCapture.State previous){return NotificationCapture.collect(e,"1234",START,previous);}
+ static void processed(NotificationCapture.Batch batch){for(NotificationCapture.Candidate c:batch.candidates)c.processed();}
+ public static int run(){
+  checks=0;
+  NotificationCapture.Envelope e=envelope();e.text=PURCHASE;
+  NotificationCapture.Batch b=collect(e,null);
+  check(b.candidates.size()==1&&b.candidates.get(0).transaction.amount==10123&&b.candidates.get(0).transaction.merchant.equals("ZOMATO")&&b.candidates.get(0).transaction.date.equals("2026-11-06"),"plain notification extracts purchase amount, merchant and date");
+  e=envelope();e.title="HSBC OTP";e.messages.add(new NotificationCapture.Message(OTP,"HSBC",NOW-1000));e.messages.add(new NotificationCapture.Message(PURCHASE,"HSBC",NOW));
+  b=collect(e,null);check(b.candidates.size()==1&&!b.candidates.get(0).transaction.refund,"OTP then purchase in messaging style captures purchase independently");
+  e=envelope();e.summary=true;e.lines.add(OTP);e.lines.add(PURCHASE);
+  b=collect(e,null);check(b.candidates.size()==1,"group-summary inbox lines preserve purchase after OTP");
+  e=envelope();e.lines.add(PURCHASE);e.lines.add(OTP);
+  check(collect(e,null).candidates.size()==1,"inbox order does not let a trailing OTP poison the purchase");
+  e=envelope();e.bigText=OTP+"\n"+PURCHASE;
+  check(collect(e,null).candidates.size()==1,"combined expanded text splits distinct bank-alert entries");
+  e=envelope();e.bigText=PURCHASE.replace("used at","used\nat");
+  check(collect(e,null).candidates.size()==1,"line-wrapped single purchase remains intact");
+  e=envelope();e.title="HSBC OTP";e.text=PURCHASE;
+  check(collect(e,null).candidates.size()==1,"OTP metadata does not override a clean purchase body");
+  e=envelope();e.title="HSBC declined";e.text=PURCHASE;
+  check(collect(e,null).candidates.isEmpty(),"decline metadata is still rejected");
+  e=envelope();e.text=OTP;
+  check(collect(e,null).candidates.isEmpty(),"OTP-only notification remains rejected");
+  e=envelope();e.bigText=OTP+" "+PURCHASE;
+  check(collect(e,null).candidates.isEmpty(),"ambiguous unsplit OTP-and-purchase text is not scrubbed into a purchase");
+  e=envelope();e.bigText="HSBC OTP [redacted]\nINR 101.23 transaction on your credit card xx1234 at ZOMATO";
+  check(collect(e,null).candidates.isEmpty(),"wrapped OTP continuation is not promoted into a transaction");
+  e=envelope();e.bigText="HSBC OTP [redacted] authorizes the following:\nHSBC Credit Card xx1234 transaction for INR 101.23 at ZOMATO";
+  check(collect(e,null).candidates.isEmpty(),"bank-prefixed OTP authorization continuation is not a completed purchase");
+  e=envelope();e.bigText="HSBC OTP [redacted]\nHSBC Credit Card xx1234 will be used at ZOMATO for INR 101.23";
+  check(collect(e,null).candidates.isEmpty(),"future-tense authorization continuation is not a completed purchase");
+  e=envelope();e.lines.add(OTP);e.lines.add(PURCHASE.replace("used at","declined at"));e.lines.add("HSBC Payment of INR 101.23 received for card xx1234");
+  check(collect(e,null).candidates.isEmpty(),"OTP, decline and repayment remain excluded from grouped content");
+  e=envelope();e.text=PURCHASE.replace("xx1234","xx5678");
+  check(collect(e,null).candidates.isEmpty(),"other card rejected in notification pipeline");
+  e=envelope();e.summary=true;e.bigText="2 new messages";
+  check(collect(e,null).candidates.isEmpty(),"aggregate-only summary has no invented transaction");
+  e=envelope();e.bigText="2 new messages";e.text=PURCHASE;
+  check(collect(e,null).candidates.size()==1,"plain text fallback handles an unparseable expanded representation");
+  e=envelope();e.text=PURCHASE.replace("INR 101.23","INR\u00a0101.23");
+  check(collect(e,null).candidates.size()==1,"nonbreaking spaces in rich notification text are normalized");
+  e=envelope();e.lines.add(OTP);e.lines.add(PURCHASE);b=collect(e,null);processed(b);
+  NotificationCapture.State state=NotificationCapture.State.decode(b.state.encode());e.posted=NOW+1000;
+  check(collect(e,state).candidates.isEmpty(),"reposting the same inbox history does not replay purchases");
+  e.lines.add(SECOND);NotificationCapture.Batch updated=collect(e,state);
+  check(updated.candidates.size()==1&&updated.candidates.get(0).transaction.amount==20234,"new inbox purchase is detected while older entries remain visible");
+  e=envelope();e.lines.add(PURCHASE);b=collect(e,null);processed(b);state=NotificationCapture.State.decode(b.state.encode());e.posted=NOW+2000;e.lines.add(PURCHASE);updated=collect(e,state);
+  check(updated.candidates.size()==1&&updated.candidates.get(0).received==NOW+2000,"new identical inbox occurrence is preserved instead of silently discarded");
+  e=envelope();e.messages.add(new NotificationCapture.Message(PURCHASE,"HSBC",NOW));e.messages.add(new NotificationCapture.Message(PURCHASE,"HSBC",NOW+1));b=collect(e,null);
+  check(b.candidates.size()==2&&!b.candidates.get(0).event.equals(b.candidates.get(1).event),"two identical SMS messages at different times have distinct event identities");
+  e=envelope();e.messages.add(new NotificationCapture.Message(PURCHASE,"HSBC",NOW));b=collect(e,null);String childEvent=b.candidates.get(0).event;e.key="summary";e.summary=true;
+  check(collect(e,null).candidates.get(0).event.equals(childEvent),"same timestamped SMS in child and summary has one event identity");
+  e=envelope();e.text=PURCHASE;b=collect(e,null);String failedEvent=b.candidates.get(0).event;state=NotificationCapture.State.decode(b.state.encode());e.posted=NOW+3000;updated=collect(e,state);
+  check(updated.candidates.size()==1&&updated.candidates.get(0).event.equals(failedEvent),"failed storage attempt can retry with its original event identity");
+  processed(updated);check(collect(e,NotificationCapture.State.decode(updated.state.encode())).candidates.isEmpty(),"successful retry is not replayed");
+  e=envelope();e.messages.add(new NotificationCapture.Message(PURCHASE,"HSBC",START-1));e.messages.add(new NotificationCapture.Message(SECOND,"HSBC",NOW));
+  b=collect(e,null);check(b.candidates.size()==1&&b.candidates.get(0).transaction.amount==20234,"timestamped history before capture start is skipped");
+  e=envelope();e.text=PURCHASE;e.posted=START-1;
+  check(collect(e,null).candidates.isEmpty(),"notification posted before capture start is skipped");
+  e=envelope();e.lines.add(PURCHASE);b=collect(e,null);b.baseline();state=NotificationCapture.State.decode(b.state.encode());e.posted=NOW+4000;e.lines.add(SECOND);updated=collect(e,state);
+  check(updated.candidates.size()==1&&updated.candidates.get(0).transaction.amount==20234,"capture-start baseline ignores visible old entries but accepts the next purchase");
+  String encoded=updated.state.encode();check(!encoded.contains("HSBC")&&!encoded.contains("ZOMATO")&&!encoded.contains("202.34")&&!encoded.contains("redacted"),"persisted replay state contains hashes and processing metadata only");
+  check(NotificationCapture.State.decode("invalid state").empty(),"corrupt replay state safely resets");
+  e=envelope();e.text=OTP;check(collect(e,null).state.empty(),"OTP-only content leaves no persisted message fingerprint");
+  e=envelope();e.text="Unrelated notification";check(collect(e,null).state.empty(),"unrelated content leaves no replay state");
+  e=envelope();e.lines.add(PURCHASE);b=collect(e,null);processed(b);String prior=b.candidates.get(0).event;e.posted=NOW+5000;
+  check(!collect(e,null).candidates.get(0).event.equals(prior),"after notification removal a fresh identical alert can be captured again");
+  e=envelope();e.text=PURCHASE;b=collect(e,null);processed(b);state=NotificationCapture.State.decode(b.state.encode());
+  check(collect(e,state).candidates.isEmpty(),"same flat notification callback at the same post time is not replayed");
+  e.posted=NOW+6000;updated=collect(e,state);
+  check(updated.candidates.size()==1&&updated.candidates.get(0).possibleDuplicate,"new identical untimestamped flat alert is retained for duplicate review");
+  e.summary=true;check(collect(e,state).candidates.isEmpty(),"flat group-summary update does not replay the known purchase");
+  String rawOtp="OTP [redacted] for INR 101.23 at ZOMATO on HSBC Credit Card ending with 1234. Valid 5 mins. Do not share.";
+  String history=PURCHASE+"\n"+PURCHASE+"\n"+rawOtp+"\n"+SECOND;
+  e=envelope();e.messages.add(new NotificationCapture.Message(history,"Test sender",NOW));
+  b=collect(e,null);check(b.candidates.size()==3,"combined messaging-style entry extracts all completed purchases around OTP");
+  e=envelope();e.lines.add(history);
+  check(collect(e,null).candidates.size()==3,"combined inbox entry extracts purchases before and after OTP");
+  e=envelope();e.bigText=history;
+  check(collect(e,null).candidates.size()==3,"expanded history splits OTP without bank prefix away from prior purchases");
+  e=envelope();e.lines.add(PURCHASE);b=collect(e,null);processed(b);state=NotificationCapture.State.decode(b.state.encode());
+  e.lines.clear();e.text="Sensitive notification content hidden";e.posted=NOW+7000;
+  b=collect(e,state);check(b.candidates.isEmpty()&&!b.state.empty(),"redacted update preserves known purchase fingerprints without inventing transactions");
+  e.text="";e.lines.add(PURCHASE);e.lines.add(SECOND);e.posted=NOW+8000;
+  updated=collect(e,NotificationCapture.State.decode(b.state.encode()));
+  check(updated.candidates.size()==1&&updated.candidates.get(0).transaction.amount==20234,"restored history after redaction only imports the new purchase");
+  e=envelope();e.messages.add(new NotificationCapture.Message(PURCHASE+"\n"+rawOtp,"Test sender",NOW));
+  b=collect(e,null);processed(b);state=NotificationCapture.State.decode(b.state.encode());e.posted=NOW+9000;e.messages.clear();
+  e.messages.add(new NotificationCapture.Message(PURCHASE+"\n"+rawOtp+"\n"+SECOND,"Test sender",NOW+9000));
+  updated=collect(e,state);check(updated.candidates.size()==1&&updated.candidates.get(0).transaction.amount==20234,"combined message timestamp is not treated as a timestamp for every historic purchase");
+  e=envelope();e.redacted=true;e.text="Sensitive notification content hidden";
+  b=collect(e,null);check(b.candidates.isEmpty()&&b.state.empty(),"hidden notification without known history creates no purchase or replay cache");
+  return checks;
+ }
+}

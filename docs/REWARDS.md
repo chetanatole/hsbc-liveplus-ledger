@@ -11,9 +11,9 @@ Notification text normally lacks the bank's merchant category code. Merchant-nam
 
 Choose the bank's merchant category, not the particular item purchased. The bank's actual cashback remains authoritative.
 
-Recognized transaction dates are used where available, otherwise notification receipt dates. Bank posting near period boundaries can differ; edit ledger dates when reconciling.
+Recognized transaction dates are used where available, otherwise notification receipt dates or the incoming SMS network timestamp. Bank posting near period boundaries can differ; edit ledger dates when reconciling.
 
-Calendar-month and statement-closing-day modes are available. The initial calendar-month setting is provisional until saved. Changing the period or cap affects all displayed history; historical rule versions are not stored.
+Calendar-month and statement-closing-day modes are available. Calendar month is the default. Card setup and valid period edits apply automatically. Changing the period or cap affects all displayed history; historical rule versions are not stored.
 
 Refunds remain excluded until linked to an original purchase. Full/partial refunds reduce that purchase's spend in its original period. The bank may recover cashback in a later statement; reconcile timing separately.
 

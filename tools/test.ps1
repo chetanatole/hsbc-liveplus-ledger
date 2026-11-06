@@ -17,7 +17,13 @@ if ($JavaHome) {
 }
 $sources = @(
   (Join-Path $repoRoot 'app/src/main/java/in/local/liveplus/Engine.java'),
-  (Join-Path $repoRoot 'tests/EngineTest.java')
+  (Join-Path $repoRoot 'app/src/main/java/in/local/liveplus/NotificationCapture.java'),
+  (Join-Path $repoRoot 'tests/EngineTest.java'),
+  (Join-Path $repoRoot 'tests/NotificationCaptureTest.java'),
+  (Join-Path $repoRoot 'app/src/main/java/in/local/liveplus/SmsCapture.java'),
+  (Join-Path $repoRoot 'tests/SmsCaptureTest.java'),
+  (Join-Path $repoRoot 'app/src/main/java/in/local/liveplus/SettingsValues.java'),
+  (Join-Path $repoRoot 'tests/SettingsValuesTest.java')
 )
 & $javac -encoding UTF-8 -source 8 -target 8 -Xlint:-options -d $OutputDirectory @sources
 if ($LASTEXITCODE -ne 0) { throw "Test compilation failed: $LASTEXITCODE" }

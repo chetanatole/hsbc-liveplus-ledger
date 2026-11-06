@@ -59,24 +59,29 @@ jobs:
           New-Item -ItemType Directory -Force -Path '.signing' | Out-Null
           [IO.File]::WriteAllBytes((Join-Path $PWD '.signing/personal-release.p12'),[Convert]::FromBase64String($env:KEYSTORE_BASE64))
           [IO.File]::WriteAllText((Join-Path $PWD '.signing/key-password.txt'),$env:KEYSTORE_PASSWORD,[Text.UTF8Encoding]::new($false))
-      - name: Build, test and verify APK
-        run: ./build.ps1
+      - name: Build, test and verify both APK editions
+        run: ./tools/build-all.ps1
       - name: Verify release signing identity and make checksum
         run: |
           $ErrorActionPreference = 'Stop'
           $expected = (Get-Content -LiteralPath 'docs/RELEASE_SIGNING_CERTIFICATE.txt' -Raw).Trim().ToLowerInvariant()
-          $certs = & "$env:JAVA_HOME/bin/java.exe" -jar "$env:ANDROID_SDK_ROOT/build-tools/35.0.0/lib/apksigner.jar" verify --print-certs 'build/LivePlus-Ledger.apk'
-          if ($LASTEXITCODE -ne 0) { throw 'APK signature verification failed.' }
-          $match = [regex]::Match(($certs -join [Environment]::NewLine),'Signer #1 certificate SHA-256 digest:\s*([a-fA-F0-9]{64})')
-          if (!$match.Success -or $match.Groups[1].Value.ToLowerInvariant() -ne $expected) { throw 'Release signing certificate does not match the retained app signing identity.' }
-          $hash = (Get-FileHash -LiteralPath 'build/LivePlus-Ledger.apk' -Algorithm SHA256).Hash.ToLowerInvariant()
-          [IO.File]::WriteAllText((Join-Path $PWD 'build/SHA256SUMS.txt'),"$hash  LivePlus-Ledger.apk"+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
-      - name: Publish APK and checksum
+          $assets = @('LivePlus-Ledger-Notifications.apk','LivePlus-Ledger-SMS.apk')
+          $checksums = foreach ($asset in $assets) {
+            $apk = Join-Path 'build' $asset
+            $certs = & "$env:JAVA_HOME/bin/java.exe" -jar "$env:ANDROID_SDK_ROOT/build-tools/35.0.0/lib/apksigner.jar" verify --print-certs $apk
+            if ($LASTEXITCODE -ne 0) { throw "APK signature verification failed: $asset" }
+            $match = [regex]::Match(($certs -join [Environment]::NewLine),'Signer #1 certificate SHA-256 digest:\s*([a-fA-F0-9]{64})')
+            if (!$match.Success -or $match.Groups[1].Value.ToLowerInvariant() -ne $expected) { throw "Signing certificate mismatch: $asset" }
+            $hash = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $asset"
+          }
+          [IO.File]::WriteAllText((Join-Path $PWD 'build/SHA256SUMS.txt'),($checksums -join [Environment]::NewLine)+[Environment]::NewLine,[Text.UTF8Encoding]::new($false))
+      - name: Publish both editions and checksums
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $releaseArgs = @('release','create',$env:GITHUB_REF_NAME,'build/LivePlus-Ledger.apk','build/SHA256SUMS.txt','--repo',$env:GITHUB_REPOSITORY,'--verify-tag','--title',"Live+ Ledger $env:GITHUB_REF_NAME",'--notes-file','.github/RELEASE_NOTES.md','--generate-notes')
+          $releaseArgs = @('release','create',$env:GITHUB_REF_NAME,'build/LivePlus-Ledger-Notifications.apk','build/LivePlus-Ledger-SMS.apk','build/SHA256SUMS.txt','--repo',$env:GITHUB_REPOSITORY,'--verify-tag','--title',"Live+ Ledger $env:GITHUB_REF_NAME",'--notes-file','.github/RELEASE_NOTES.md','--generate-notes')
           if ($env:GITHUB_REF_NAME.Contains('-')) { $releaseArgs += '--prerelease' }
           & gh @releaseArgs
           if ($LASTEXITCODE -ne 0) { throw 'GitHub release creation failed. Check whether this tag already has a release before retrying.' }

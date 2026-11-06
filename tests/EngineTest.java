@@ -39,6 +39,32 @@ public class EngineTest {
   Engine.Tx r=purchase(6,300000,0);r.refund=true;rows.add(r);t=Engine.totals(rows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);check(t.accelerated==1300000&&t.refunds==300000,"unlinked refund excluded");
   r.linked="1";r.date="2026-11-02";t=Engine.totals(rows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);check(t.accelerated==1000000&&t.cashback==101500&&t.remaining==200000,"linked later refund reduces original period");
   rows.get(0).active=false;t=Engine.totals(rows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);check(t.accelerated==0,"deleted purchase excluded");
+  List<Engine.Tx> breakdownRows=Arrays.asList(purchase(30,1300000,1),purchase(31,100000,5),purchase(32,99999,6));
+  Engine.Totals breakdown=Engine.totals(breakdownRows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);
+  check(breakdown.acceleratedCashback==120000&&breakdown.otherCashback==1500&&breakdown.cashback==121500,"rate breakdown uses capped accelerated cashback and base cashback");
+  check(breakdown.totalSpend==1499999,"total spend includes all classified rate groups independently of the cap");
+  breakdown=Engine.totals(breakdownRows,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),50000);
+  check(breakdown.acceleratedCashback==50000&&breakdown.otherCashback==1500&&breakdown.cashback==51500,"breakdown follows a custom cashback cap");
+  Engine.Tx acceleratedRefund=purchase(33,400000,0);acceleratedRefund.refund=true;acceleratedRefund.linked="30";acceleratedRefund.date="2026-11-05";
+  Engine.Tx otherRefund=purchase(34,20000,0);otherRefund.refund=true;otherRefund.linked="31";
+  List<Engine.Tx> refundedBreakdown=new ArrayList<>(breakdownRows);refundedBreakdown.add(acceleratedRefund);refundedBreakdown.add(otherRefund);
+  breakdown=Engine.totals(refundedBreakdown,LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);
+  check(breakdown.acceleratedCashback==90000&&breakdown.otherCashback==1200&&breakdown.cashback==91200,"linked refunds reduce the matching rate components in the original period");
+  check(breakdown.totalSpend==1079999,"total spend uses net purchases after linked refunds, including later-period refunds");
+  breakdown=Engine.totals(Arrays.asList(purchase(35,101,1),purchase(36,100,5)),LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);
+  check(breakdown.acceleratedCashback==10&&breakdown.otherCashback==2&&breakdown.cashback==12,"component rounding reconciles exactly to the total");
+  breakdown=Engine.totals(Arrays.asList(purchase(37,99999,6),purchase(38,100000,0)),LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);
+  check(breakdown.excluded==99999&&breakdown.unknown==100000&&breakdown.acceleratedCashback==0&&breakdown.otherCashback==0&&breakdown.cashback==0,"excluded and unclassified spending contributes no cashback");
+  check(breakdown.totalSpend==199999,"uncategorized and excluded purchases still count toward total spend");
+  breakdown=Engine.totals(Collections.emptyList(),LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);
+  check(breakdown.acceleratedCashback==0&&breakdown.otherCashback==0&&breakdown.cashback==0,"empty period has zero cashback in each rate group");
+  check(breakdown.totalSpend==0,"empty period has zero total spend");
+  Engine.Tx duplicateSpend=purchase(39,50000,1);duplicateSpend.duplicate=true;
+  Engine.Tx unlinkedSpendRefund=purchase(40,20000,0);unlinkedSpendRefund.refund=true;
+  Engine.Tx outsideSpend=purchase(41,30000,1);outsideSpend.date="2026-11-01";
+  Engine.Tx deletedSpend=purchase(42,40000,1);deletedSpend.active=false;
+  breakdown=Engine.totals(Arrays.asList(purchase(43,10000,1),purchase(44,2000,0),purchase(45,3000,6),duplicateSpend,unlinkedSpendRefund,outsideSpend,deletedSpend),LocalDate.of(2026,10,1),LocalDate.of(2026,10,31),120000);
+  check(breakdown.totalSpend==15000&&breakdown.cashback==1000,"total spend excludes possible duplicates, unlinked refunds, deleted rows and other periods");
   List<Engine.Tx> reviewRows=new ArrayList<>();
   Engine.Tx suggested=purchase(10,10000,1);suggested.confirmed=false;reviewRows.add(suggested);
   Engine.Tx unclassified=purchase(11,10000,0);reviewRows.add(unclassified);
@@ -73,6 +99,9 @@ public class EngineTest {
   check(Engine.category("My Local Shop",current,false,2)==2,"custom mapping classifies an unknown merchant");
   check(Engine.category("Blinkit",current,false,-1)==2,"no saved mapping uses built-in suggestion");
   check(Engine.category("Blinkit",current,false,0)==2&&Engine.category("Blinkit",current,false,99)==2,"invalid saved categories do not suppress suggestions");
-  System.out.println("PASS: "+checks+" parser, reward, refund, period, review, and merchant checks; "+Engine.builtInMerchants().size()+" built-in aliases");
+  checks+=NotificationCaptureTest.run();
+  checks+=SmsCaptureTest.run();
+  checks+=SettingsValuesTest.run();
+  System.out.println("PASS: "+checks+" parser, reward, refund, period, review, merchant, notification, incoming-SMS, and settings validation checks; "+Engine.builtInMerchants().size()+" built-in aliases");
  }
 }

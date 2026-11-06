@@ -105,7 +105,7 @@ public final class Engine {
   }
   return count;
  }
- public static class Totals {public long accelerated,other,excluded,unknown,refunds,cashback,remaining; public int review;}
+ public static class Totals {public long totalSpend,accelerated,other,excluded,unknown,refunds,acceleratedCashback,otherCashback,cashback,remaining; public int review;}
  public static Totals totals(List<Tx> rows,LocalDate start,LocalDate end,long cap) {
   Totals t=new Totals();
   for(Tx x:rows){ if(!x.active)continue;LocalDate d=LocalDate.parse(x.date);if(d.isBefore(start)||d.isAfter(end))continue;
@@ -113,12 +113,14 @@ public final class Engine {
    long net=x.amount;
    for(Tx r:rows)if(r.active&&r.refund&&r.linked.equals(String.valueOf(x.id)))net-=r.amount;
    net=Math.max(0,net);
+   if(!x.duplicate)t.totalSpend+=net;
    if(needsReview(x))t.review++;
    if(x.duplicate||x.category==0){t.unknown+=net;continue;}
    if(x.category>=1&&x.category<=4)t.accelerated+=net;
    else if(x.category==5)t.other+=net;else t.excluded+=net;
   }
-  long bonus=Math.min(cap, t.accelerated/10);
-  t.cashback=bonus+Math.round(t.other*0.015);t.remaining=Math.max(0,cap*10-t.accelerated);return t;
+  t.acceleratedCashback=Math.min(cap,t.accelerated/10);
+  t.otherCashback=Math.round(t.other*0.015);
+  t.cashback=t.acceleratedCashback+t.otherCashback;t.remaining=Math.max(0,cap*10-t.accelerated);return t;
  }
 }
